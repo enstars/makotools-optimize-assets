@@ -17,6 +17,7 @@ fi
 # for each jpg or jpeg in the input directory
 for img in $( find $input_dir -type f -iname "*.jpg" -o -iname "*.jpeg" );
 do
-#   cp $img ${img%.*}-optimized.jpg
+#   cp $img ${img%.*}-copy.jpg
   jpegoptim -m $quality ${img%.*}.jpg
+  magick ${img%.*}.jpg    -resize 10x10  ${img%.*}-placeholder.jpg
 done

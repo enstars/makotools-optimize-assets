@@ -15,7 +15,8 @@ elif [[ -z "$quality" ]]; then
 fi
 
 # for each png in the input directory
-for img in $( find $input_dir -type f -iname "*.png" );
+# card_full1 are transparent renders
+for img in $( find $input_dir -type f -iname "*.png" -a ! -iname "card_full1*"  );
 do
   convert $img -quality $quality% ${img%.*}.jpg
 done
