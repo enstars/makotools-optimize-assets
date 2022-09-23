@@ -1,4 +1,4 @@
-# assets-optimize
+# Optimizing MakoTools Assets
 
 Scripts for optimizing assets. Referenced from https://css-tricks.com/converting-and-optimizing-images-from-the-command-line/.
 
