@@ -1,8 +1,8 @@
 
 # drive -> local
-rclone copy "RaisDrive:/Enstars2/Shared/frameless cards" assets
-rclone copy "RaisDrive:/Enstars2/Shared/cgs" assets
-rclone copy "RaisDrive:/Enstars2/Shared/renders" assets
+rclone copy "RaisDrive:enstars transparents/Enstars2/Shared/frameless cards" assets
+rclone copy "RaisDrive:enstars transparents/Enstars2/Shared/cgs" assets
+rclone copy "RaisDrive:enstars transparents/Enstars2/Shared/renders" assets
 # WARNING: Don't use rclone sync as it may delete files already on there
 
 # get files from backblaze directly (not recommended / not for updating)
