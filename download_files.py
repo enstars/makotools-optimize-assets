@@ -10,9 +10,9 @@ def rclone_check(query: str, output_file: str, src: str):
 
     if os.path.exists(output_file) == False:
         try:
-            print("Fetching new frameless cards")
+            print("Fetching new images")
             subprocess.run(
-                f"rclone check '{src}' 'backblaze:ensemble-square/assets' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
+                f"rclone check '{src}' 'backblaze:ensemble-square/render' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
                 shell=True,
                 text=True,
             )
@@ -52,7 +52,7 @@ def remove_render_artifacts(assets_location: str):
         try:
             print(f"Removing render artifacts from {file}")
             os.system(
-                f"magick {file} \( -clone 0 -channel a -fx 0 \) \( -clone 0  -alpha extract -channel RGB -black-threshold 5% +channel  \) -swap 0,1 -composite {file}"
+                f"magick '{file}' \( -clone 0 -channel a -fx 0 \) \( -clone 0  -alpha extract -channel RGB -black-threshold 5% +channel  \) -swap 0,1 -composite '{file}'"
             )
         except:
             print(f"Could not remove artifacts from {file}, skipping")
@@ -80,7 +80,7 @@ def png2webp(assets_location: str):
         try:
             print(f"Converting {file} to webp")
             webp_filename = file.split(".")[0] + ".webp"
-            os.system(f"cwebp {file} -q 90 -o {webp_filename}")
+            os.system(f"cwebp '{file}' -q 90 -o '{webp_filename}'")
             if os.path.exists(webp_filename):
                 print(f"{webp_filename} saved successfully")
             else:
@@ -95,7 +95,7 @@ def optimize_jpegs(assets_location: str):
     for file in jpeg_files:
         try:
             print(f"Optimizing {file}")
-            os.system(f"jpegoptim -m 95 {file}")
+            os.system(f"jpegoptim -m 95 '{file}'")
         except:
             print(f"Could not optimize {file}, skipping")
             continue
@@ -115,38 +115,81 @@ if __name__ == "__main__":
     if rclone.check_remote_existing("RaisDrive") == False:
         raise Exception("Rai's drive is not on your system")
 
-    ONEDRIVE_FRAMELESS = (
-        "RaisDrive:enstars transparents/Enstars2/Shared/frameless cards"
+    # ONEDRIVE_FRAMELESS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Shared/frameless cards"
+    # )
+    # ONEDRIVE_CGS = "RaisDrive:enstars transparents/Enstars2/Shared/cgs"
+    # ONEDRIVE_RENDERS = "RaisDrive:enstars transparents/Enstars2/Shared/renders"
+    ONEDRIVE_CHARACTERS = (
+        "RaisDrive:enstars transparents/Enstars Fullbody Renders (Game)"
     )
-    ONEDRIVE_CGS = "RaisDrive:enstars transparents/Enstars2/Shared/cgs"
-    ONEDRIVE_RENDERS = "RaisDrive:enstars transparents/Enstars2/Shared/renders"
+    # ONEDRIVE_KR_CGS = "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/KR/cgs"
+    # ONEDRIVE_KR_FRAMELESS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/KR/frameless"
+    # )
+    # ONEDRIVE_KR_RENDERS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/KR/renders"
+    # )
+    # ONEDRIVE_GLOBAL_FRAMELESS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/Shared/frameless"
+    # )
+    # ONEDRIVE_GLOBAL_CGS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/Shared/cgs"
+    # )
+    # ONEDRIVE_GLOBAL_RENDERS = (
+    #     "RaisDrive:enstars transparents/Enstars2/Foreign Exclusive/Shared/renders"
+    # )
 
-    FRAMELESS_OUTPUT = "missing_frameless.txt"
-    CGS_OUTPUT = "missing_cgs.txt"
-    RENDERS_OUTPUT = "missing_renders.txt"
+    # FRAMELESS_OUTPUT = "missing_frameless.txt"
+    # CGS_OUTPUT = "missing_cgs.txt"
+    # RENDERS_OUTPUT = "missing_renders.txt"
+    CHARAS_OUTPUT = "missing_charas.txt"
+    # KR_CGS_OUTPUT = "missing_kr_cgs.txt"
+    # KR_FRAMELESS_OUTPUT = "missing_kr_frameless.txt"
+    # KR_RENDERS_OUTPUT = "missing_kr_renders.txt"
+    # GLOBAL_CGS_OUTPUT = "missing_global_cgs.txt"
+    # GLOBAL_FRAMELESS_OUTPUT = "missing_global_frameless.txt"
+    # GLOBAL_RENDERS_OUTPUT = "missing_global_renders.txt"
 
-    rclone_check("card_rectangle4_*.png", FRAMELESS_OUTPUT, ONEDRIVE_FRAMELESS)
-    rclone_check("card_still_full1_*.png", CGS_OUTPUT, ONEDRIVE_CGS)
-    rclone_check("card_full1_*.png", RENDERS_OUTPUT, ONEDRIVE_RENDERS)
+    # FRAMELESS_QUERY = "card_rectangle4_*.png"
+    # CG_QUERY = "card_still_full1_*.png"
+    # RENDER_QUERY = "card_full1_*.png"
+    CHARA_QUERY = "character_full1_*.png"
+
+    # rclone_check(FRAMELESS_QUERY, FRAMELESS_OUTPUT, ONEDRIVE_FRAMELESS)
+    # rclone_check(CG_QUERY, CGS_OUTPUT, ONEDRIVE_CGS)
+    # rclone_check(RENDER_QUERY, RENDERS_OUTPUT, ONEDRIVE_RENDERS)
+    rclone_check(CHARA_QUERY, CHARAS_OUTPUT, ONEDRIVE_CHARACTERS)
+    # rclone_check(CG_QUERY, KR_CGS_OUTPUT, ONEDRIVE_KR_CGS)
+    # rclone_check(FRAMELESS_QUERY, KR_FRAMELESS_OUTPUT, ONEDRIVE_KR_FRAMELESS)
+    # rclone_check(RENDER_QUERY, KR_RENDERS_OUTPUT, ONEDRIVE_KR_RENDERS)
+    # rclone_check(CG_QUERY, GLOBAL_CGS_OUTPUT, ONEDRIVE_GLOBAL_CGS)
+    # rclone_check(FRAMELESS_QUERY, GLOBAL_FRAMELESS_OUTPUT, ONEDRIVE_GLOBAL_FRAMELESS)
+    # rclone_check(RENDER_QUERY, GLOBAL_RENDERS_OUTPUT, ONEDRIVE_GLOBAL_RENDERS)
 
     # now that missing files are here, copy them to your computer
     assets_path = os.getcwd() + "/assets"
 
     print(f"does assets dir exist: {os.path.exists(assets_path)}")
 
-    rclone_copyto(
-        FRAMELESS_OUTPUT,
-        ONEDRIVE_FRAMELESS,
-        assets_path,
-    )
-
-    rclone_copyto(
-        CGS_OUTPUT,
-        ONEDRIVE_CGS,
-        assets_path,
-    )
-
-    rclone_copyto(RENDERS_OUTPUT, ONEDRIVE_RENDERS, assets_path)
+    # rclone_copyto(
+    #     FRAMELESS_OUTPUT,
+    #     ONEDRIVE_FRAMELESS,
+    #     assets_path,
+    # )
+    # rclone_copyto(
+    #     CGS_OUTPUT,
+    #     ONEDRIVE_CGS,
+    #     assets_path,
+    # )
+    # rclone_copyto(RENDERS_OUTPUT, ONEDRIVE_RENDERS, assets_path)
+    rclone_copyto(CHARAS_OUTPUT, ONEDRIVE_CHARACTERS, assets_path)
+    # rclone_copyto(KR_CGS_OUTPUT, ONEDRIVE_KR_CGS, assets_path)
+    # rclone_copyto(KR_FRAMELESS_OUTPUT, ONEDRIVE_KR_FRAMELESS, assets_path)
+    # rclone_copyto(KR_RENDERS_OUTPUT, ONEDRIVE_KR_RENDERS, assets_path)
+    # rclone_copyto(GLOBAL_CGS_OUTPUT, ONEDRIVE_GLOBAL_CGS, assets_path)
+    # rclone_copyto(GLOBAL_RENDERS_OUTPUT, ONEDRIVE_GLOBAL_RENDERS, assets_path)
+    # rclone_copyto(GLOBAL_FRAMELESS_OUTPUT, ONEDRIVE_GLOBAL_FRAMELESS, assets_path)
 
     # optimize and convert images before uploading them
     remove_render_artifacts(assets_path)
@@ -155,8 +198,11 @@ if __name__ == "__main__":
     optimize_jpegs(assets_path)
 
     # upload the images to backblaze
-    rclone_upload(assets_path, "backblaze:ensemble-square/assets")
+    rclone_upload(assets_path, "backblaze:ensemble-square/render")
 
     # delete files and assets
-    os.system(f"rm {FRAMELESS_OUTPUT} {RENDERS_OUTPUT} {CGS_OUTPUT}")
+    # os.system(
+    #     f"rm {FRAMELESS_OUTPUT} {RENDERS_OUTPUT} {CGS_OUTPUT} {CHARAS_OUTPUT} {KR_CGS_OUTPUT} {KR_RENDERS_OUTPUT} {KR_FRAMELESS_OUTPUT} {GLOBAL_FRAMELESS_OUTPUT} {GLOBAL_RENDERS_OUTPUT} {GLOBAL_CGS_OUTPUT}"
+    # )
+    os.system(f"rm {CHARAS_OUTPUT}")
     os.system("rm -r assets")
