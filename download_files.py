@@ -12,7 +12,7 @@ def rclone_check(query: str, output_file: str, src: str):
         try:
             print("Fetching new images")
             subprocess.run(
-                f"rclone check '{src}' 'backblaze:ensemble-square/render' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
+                f"rclone check '{src}' 'backblaze:ensemble-square/assets' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
                 shell=True,
                 text=True,
             )
