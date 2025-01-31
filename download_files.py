@@ -5,14 +5,14 @@ from wand.image import Image
 from glob import glob
 
 
-def rclone_check(query: str, output_file: str, src: str):
+def rclone_check(query: str, output_file: str, src: str, folder: str = "assets"):
     file_exclusion = "*.{jpg, jpeg, webp}"
 
     if os.path.exists(output_file) == False:
         try:
             print("Fetching new images")
             subprocess.run(
-                f"rclone check '{src}' 'backblaze:ensemble-square/assets' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
+                f"rclone check '{src}' 'backblaze:ensemble-square/{folder}' --include '{query}' --exclude '{file_exclusion}' --one-way --missing-on-dst {output_file}",
                 shell=True,
                 text=True,
             )
@@ -110,6 +110,7 @@ if __name__ == "__main__":
         raise Exception("Rclone is not installed, please install it!")
 
     os.system("mkdir assets")
+    os.system("mkdir render_assets")
 
     # get files that are on the assets drive but not on mktls
     if rclone.check_remote_existing("RaisDrive") == False:
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     rclone_check(FRAMELESS_QUERY, FRAMELESS_OUTPUT, ONEDRIVE_FRAMELESS)
     rclone_check(CG_QUERY, CGS_OUTPUT, ONEDRIVE_CGS)
     rclone_check(RENDER_QUERY, RENDERS_OUTPUT, ONEDRIVE_RENDERS)
-    rclone_check(CHARA_QUERY, CHARAS_OUTPUT, ONEDRIVE_CHARACTERS)
+    rclone_check(CHARA_QUERY, CHARAS_OUTPUT, ONEDRIVE_CHARACTERS, "render")
     rclone_check(CG_QUERY, KR_CGS_OUTPUT, ONEDRIVE_KR_CGS)
     rclone_check(FRAMELESS_QUERY, KR_FRAMELESS_OUTPUT, ONEDRIVE_KR_FRAMELESS)
     rclone_check(RENDER_QUERY, KR_RENDERS_OUTPUT, ONEDRIVE_KR_RENDERS)
@@ -169,6 +170,8 @@ if __name__ == "__main__":
 
     # now that missing files are here, copy them to your computer
     assets_path = os.getcwd() + "/assets"
+    illus_assets_path = os.getcwd() + "/illus_assets"
+    renders_assets_path = os.getcwd() + "/render_assets"
 
     print(f"does assets dir exist: {os.path.exists(assets_path)}")
 
@@ -183,7 +186,7 @@ if __name__ == "__main__":
         assets_path,
     )
     rclone_copyto(RENDERS_OUTPUT, ONEDRIVE_RENDERS, assets_path)
-    rclone_copyto(CHARAS_OUTPUT, ONEDRIVE_CHARACTERS, assets_path)
+    rclone_copyto(CHARAS_OUTPUT, ONEDRIVE_CHARACTERS, renders_assets_path)
     rclone_copyto(KR_CGS_OUTPUT, ONEDRIVE_KR_CGS, assets_path)
     rclone_copyto(KR_FRAMELESS_OUTPUT, ONEDRIVE_KR_FRAMELESS, assets_path)
     rclone_copyto(KR_RENDERS_OUTPUT, ONEDRIVE_KR_RENDERS, assets_path)
@@ -197,12 +200,19 @@ if __name__ == "__main__":
     png2webp(assets_path)
     optimize_jpegs(assets_path)
 
+    remove_render_artifacts(renders_assets_path)
+    png2jpg(renders_assets_path)
+    png2webp(renders_assets_path)
+    optimize_jpegs(renders_assets_path)
+
     # upload the images to backblaze
     rclone_upload(assets_path, "backblaze:ensemble-square/assets")
+    rclone_upload(illus_assets_path, "backblaze:ensemble-square/assets")
+    rclone_upload(renders_assets_path, "backblaze:ensemble-square/render")
 
     # delete files and assets
     os.system(
         f"rm {FRAMELESS_OUTPUT} {RENDERS_OUTPUT} {CGS_OUTPUT} {CHARAS_OUTPUT} {KR_CGS_OUTPUT} {KR_RENDERS_OUTPUT} {KR_FRAMELESS_OUTPUT} {GLOBAL_FRAMELESS_OUTPUT} {GLOBAL_RENDERS_OUTPUT} {GLOBAL_CGS_OUTPUT}"
     )
-    os.system(f"rm {CHARAS_OUTPUT}")
     os.system("rm -r assets")
+    os.system("rm -r render_assets")
